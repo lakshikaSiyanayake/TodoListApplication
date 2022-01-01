@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace TodoListApplication.Migrations
+namespace TodoListAPI.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class Initialcreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -54,7 +54,8 @@ namespace TodoListApplication.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ItemName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     ItemDescription = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    ItemStatus = table.Column<bool>(type: "bit", maxLength: 1, nullable: false)
+                    ItemStatus = table.Column<bool>(type: "bit", maxLength: 1, nullable: false),
+                    loggedUser = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
                 },
                 constraints: table =>
                 {

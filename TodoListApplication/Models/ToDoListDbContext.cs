@@ -32,6 +32,10 @@ namespace TodoListApplication.Models
                 entity.Property(e => e.ItemStatus)
                 .IsRequired()
                 .HasMaxLength(1);
+
+                entity.Property(e => e.loggedUser)
+                .IsRequired()
+                .HasMaxLength(200);
             });
 
             base.OnModelCreating(builder);

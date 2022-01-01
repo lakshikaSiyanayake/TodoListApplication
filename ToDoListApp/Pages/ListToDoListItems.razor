@@ -1,0 +1,96 @@
+﻿
+@page "/ListToDoListItems"
+@using TodoListApplication.Models
+@using Newtonsoft.Json
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor httpContextAccessor
+<AuthorizeView>
+    <Authorized>
+        <h1 class="bg-info text-white">Manage Todo List Items</h1>
+
+        <NavLink class="btn btn-primary" href="CreateTodoListItems">Create TodoList</NavLink>
+
+        <table class="table table-sm table-striped table-bordered m-2">
+            <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Item Name</th>
+                    <th>Item Description</th>
+                    <th>Item Status</th>
+                    <th>Update</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (ToDoListItem t in TodoListItems)
+                {
+                    <tr>
+                        <td>@t.ItemId</td>
+                        <td>@t.ItemName</td>
+                        <td>@t.ItemDescription</td>
+                        @if (t.ItemStatus)
+                        {
+                            <td>Done</td>
+                        }
+                        else
+                        {
+                            <td>Not Done</td>
+                        }
+                        <td>
+                            <a href="EditTodoListItems/@t.ItemId">
+                                <img height="16" width="16" src="/icons/edit.png" />
+                            </a>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn" @onclick="@(() => Delete(t))">
+                                <img height="16" width="16" src="/icons/delete.png" />
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </Authorized>
+    <NotAuthorized>
+        <h3>Please login first</h3>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    [Inject]
+    public NavigationManager NV { get; set; }
+
+    public IEnumerable<ToDoListItem> TodoListItems { get; set; } = Enumerable.Empty<ToDoListItem>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        await CallAPI();
+    }
+
+    async Task CallAPI()
+    {
+        using (var httpClient = new HttpClient())
+        {
+        http://localhost:41068/api/ToDoListItems/loggedUser?loggedUser=user%40gmail.com
+            using (var response = await httpClient.GetAsync("http://localhost:41068/api/TodoListItems/loggedUser?loggedUser="+ httpContextAccessor.HttpContext.User.Identity.Name + ""))
+            {
+                string apiResponse = await response.Content.ReadAsStringAsync();
+                TodoListItems = JsonConvert.DeserializeObject<List<ToDoListItem>>(apiResponse);
+            }
+        }
+    }
+
+    public async Task Delete(ToDoListItem t)
+    {
+        using (var httpClient = new HttpClient())
+        {
+            using (var response = await httpClient.DeleteAsync("http://localhost:41068/api/TodoListItems/" + t.ItemId))
+            {
+                string apiResponse = await response.Content.ReadAsStringAsync();
+            }
+        }
+        await CallAPI();
+    }
+}

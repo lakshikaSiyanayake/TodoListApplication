@@ -7,29 +7,40 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TodoListApplication.Models;
-
 namespace TodoListApplication.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ToDoListItemsController : ControllerBase
     {
-        private readonly ToDoListDbContext _context;
+        private readonly ToDoListDbContext _context;    
 
         public ToDoListItemsController(ToDoListDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/ToDoListItems
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ToDoListItem>>> GetToDoItems()
+      
+        [HttpGet("loggedUser")]
+        public async Task<List<ToDoListItem>> GetToDoItems(string loggedUser)
         {
-            return await _context.ToDoItems.ToListAsync();
+            {
+                //string loggedUser = IHttpContextAccessor.HttpContext.User.Identity.Name;
+                var toDoListItems = await _context.ToDoItems.ToListAsync();
+                toDoListItems = toDoListItems.Where(x => x.loggedUser == loggedUser).ToList();
+                if (toDoListItems.Count != 0)
+                {
+                    return toDoListItems;
+                }
+                else
+                {
+                    return toDoListItems;
+                }
+            }
+
         }
 
-        // GET: api/ToDoListItems/5
+        // GET: api/ToDoListItems/2
         [HttpGet("{id}")]
         public async Task<ActionResult<ToDoListItem>> GetToDoListItem(int id)
         {
@@ -43,10 +54,9 @@ namespace TodoListApplication.Controllers
             return toDoListItem;
         }
 
-        // PUT: api/ToDoListItems/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // PUT: api/ToDoListItems/2
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutToDoListItem(int id, ToDoListItem toDoListItem)
+        public async Task<ActionResult<ToDoListItem>> PutToDoListItem(int id, ToDoListItem toDoListItem)
         {
             if (id != toDoListItem.ItemId)
             {
@@ -71,11 +81,10 @@ namespace TodoListApplication.Controllers
                 }
             }
 
-            return NoContent();
+            return toDoListItem;
         }
 
         // POST: api/ToDoListItems
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<ToDoListItem>> PostToDoListItem(ToDoListItem toDoListItem)
         {

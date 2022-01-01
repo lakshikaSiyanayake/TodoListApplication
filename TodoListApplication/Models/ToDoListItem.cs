@@ -23,5 +23,9 @@ namespace TodoListApplication.Models
         [Required(ErrorMessage = "ItemStatus is required")]
         [Column(TypeName = "bit")]
         public bool ItemStatus { get; set; }
+
+        [Column(TypeName = "nvarchar(200)")]
+        public string loggedUser { get; set; }
+
     }
 }

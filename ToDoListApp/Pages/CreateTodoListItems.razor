@@ -1,0 +1,92 @@
+﻿@page "/CreateTodoListItems"
+@using TodoListApplication.Models
+@using Newtonsoft.Json
+@using System.Text
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor httpContextAccessor
+
+<link href="/validation.css" rel="stylesheet" />
+
+<h1 class="bg-info text-white">Create TodoList</h1>
+<h2 class="text-success p-2">@FormSubmitMessage</h2>
+
+<EditForm Model="TodoListData" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>Item Name</label>
+        <ValidationMessage For="@(() => TodoListData.ItemName)" />
+        <InputText class="form-control" @bind-Value="TodoListData.ItemName" />
+    </div>
+    <div class="form-group">
+        <label>Item Description</label>
+        <ValidationMessage For="@(() => TodoListData.ItemDescription)" />
+        <InputText class="form-control" @bind-Value="TodoListData.ItemDescription" />
+    </div>
+    @*<div class="form-group">
+            <label>End Location</label>
+            <ValidationMessage For="@(() => TodoListData.TodoStatus)" />
+            <InputText class="form-control" @bind-Value="TodoListData.TodoStatus.ToString()" />
+        </div>*@
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Click</button>
+    </div>
+</EditForm>
+
+@if (ReceivedTodoList != null)
+{
+    <h3 class="text-warning p-2">Todo List Items</h3>
+    <table class="table table-sm table-striped table-bordered m-2">
+        <thead>
+            <tr>
+                <th>Item ID</th>
+                <th>Item Name</th>
+                <th>Item Description</th>
+                <th>Item Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@ReceivedTodoList.ItemId</td>
+                <td>@ReceivedTodoList.ItemName</td>
+                <td>@ReceivedTodoList.ItemDescription</td>
+                @if (ReceivedTodoList.ItemStatus)
+                {
+                    <td>Done</td>
+                }
+                else
+                {
+                    <td>Not Done</td>
+                }
+            </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+
+    public ToDoListItem TodoListData = new ToDoListItem();
+    ToDoListItem ReceivedTodoList;
+    public string FormSubmitMessage { get; set; } = "TodoList Not Created";
+
+
+    public async Task HandleValidSubmit()
+    {
+        ReceivedTodoList = new ToDoListItem();
+        TodoListData.loggedUser = httpContextAccessor.HttpContext.User.Identity.Name;
+        using (var httpClient = new HttpClient())
+        {
+            StringContent content = new StringContent(JsonConvert.SerializeObject(TodoListData), Encoding.UTF8, "application/json");
+
+            using (var response = await httpClient.PostAsync("http://localhost:41068/api/ToDoListItems", content))
+            {
+                string apiResponse = await response.Content.ReadAsStringAsync();
+                ReceivedTodoList = JsonConvert.DeserializeObject<ToDoListItem>(apiResponse);
+            }
+        }
+        FormSubmitMessage = "TodoList Created";
+    }
+
+    public void HandleInvalidSubmit() => FormSubmitMessage = "Invalid TodoList";
+}
